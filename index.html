@@ -60,6 +60,20 @@
     padding: 10px 16px; border-radius: 8px; background: var(--accent); color: var(--accent-ink);
   }
   .btn:hover { filter: brightness(1.1); }
+  .btn-lg { font-size: 18px; padding: 14px 24px; border-radius: 10px; }
+  .btn-ghost { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); }
+  .cta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 28px; }
+
+  .app-card {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 20px; margin-bottom: 16px;
+    padding: 24px; border-radius: 14px; border: 1.5px solid var(--accent);
+    background: linear-gradient(135deg, rgba(61,220,132,.14), var(--panel) 60%);
+  }
+  .app-card img { width: 64px; height: 64px; border-radius: 14px; }
+  .app-card div { flex: 1 1 260px; }
+  .app-card h3 { font-size: 22px; margin: 0 0 6px; }
+  .app-card p { margin: 0; color: var(--muted); }
+  .sub { font-size: 15px; color: var(--muted); margin: 24px 0 12px; }
 
   details { margin-top: 20px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 20px; }
   summary { cursor: pointer; font-weight: 600; }
@@ -115,10 +129,15 @@
     </div>
     <h1>Know what to trust<br>in your feed.</h1>
     <p class="lede">
-      SSD Tick reads the signatures on posts as you scroll. Genuine posts from people you can
-      attribute get a boost. Anonymous and untrusted posts don't, and tampered ones get flagged.
+      The SSD app gives you your own signing key and puts your signature on what you post. The
+      SSD Tick extension reads signatures as you scroll: genuine posts from people you can
+      attribute get a boost, anonymous and untrusted ones don't, and tampered ones get flagged.
       It all runs in your browser, with no accounts and no central server.
     </p>
+    <div class="cta">
+      <a class="btn btn-lg" href="https://get-ssd.github.io/SignedSealedDelivered/">Open the SSD app</a>
+      <a class="btn btn-ghost" href="#get">Get the Tick extension</a>
+    </div>
   </header>
 
   <section>
@@ -177,6 +196,12 @@
     <h2>What it does</h2>
     <div class="features">
       <div class="feature">
+        <h3>Sign your own posts and documents</h3>
+        <p>The SSD app adds a compact Ed25519 signature to your posts, so readers running Tick can
+          see it's really you. It also signs, seals and verifies whole documents as
+          <code>.ssd</code> files, which you can encrypt to a named recipient.</p>
+      </div>
+      <div class="feature">
         <h3>Boosts and flags what you read</h3>
         <p>Tick checks every signed post on the page against the keys you hold. Attributable,
           genuine posts get a boost. Anonymous and untrusted posts don't, and posts that were
@@ -193,17 +218,21 @@
         <p>Tick works in Firefox, Chrome, Edge and Brave on desktop, and on Android through
           Firefox Nightly. It works on Facebook, X, Reddit, Telegram and WhatsApp.</p>
       </div>
-      <div class="feature">
-        <h3>Sign your own posts and documents</h3>
-        <p>The SSD app adds a compact Ed25519 signature to your posts, so readers running Tick can
-          see it's really you. It also signs, seals and verifies whole documents as
-          <code>.ssd</code> files, which you can encrypt to a named recipient.</p>
-      </div>
     </div>
   </section>
 
   <section>
-    <h2>Get the beta</h2>
+    <h2 id="get">Get the beta</h2>
+    <div class="app-card">
+      <img src="icon-192.png" alt="">
+      <div>
+        <h3>SSD app</h3>
+        <p>Start here. Create your keys, put your public key on your profiles, and sign posts and
+          documents. It installs as an app on phone or desktop.</p>
+      </div>
+      <a class="btn btn-lg" href="https://get-ssd.github.io/SignedSealedDelivered/">Open the app</a>
+    </div>
+    <p class="sub">Then add SSD Tick to your browser to see signatures as you read.</p>
     <div class="get">
       <div class="card">
         <h3>SSD Tick for Firefox</h3>
@@ -216,12 +245,6 @@
         <p>Boosts and flags signed posts in desktop Chrome, Edge and Brave. It is a manual install
           during the beta; the steps are below.</p>
         <a class="btn" href="https://github.com/get-ssd/ssd-tick-2/releases/latest/download/ssd-tick-chrome.zip">Download for Chrome</a>
-      </div>
-      <div class="card">
-        <h3>SSD app</h3>
-        <p>Create your keys, put your public key on your profiles, and sign posts and documents.
-          It installs as an app on phone or desktop.</p>
-        <a class="btn" href="https://get-ssd.github.io/SignedSealedDelivered/">Open the app</a>
       </div>
     </div>
 
