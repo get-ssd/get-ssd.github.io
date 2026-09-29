@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signed, Sealed, Delivered — Beta</title>
+<meta name="description" content="Sign what you post. Verify what you read. Ed25519 signing for social media and documents, running entirely in your browser.">
+<link rel="icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --panel: #141414;
+    --line: #262626;
+    --text: #ececec;
+    --muted: #9a9a9a;
+    --accent: #3ddc84;
+    --accent-ink: #06240f;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  a { color: var(--accent); }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 16px; }
+
+  header { padding: 64px 0 40px; }
+  .brand { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
+  .brand img { width: 48px; height: 48px; border-radius: 10px; }
+  .brand span { font-weight: 600; letter-spacing: .02em; }
+  .beta {
+    font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--accent-ink); background: var(--accent); padding: 2px 8px; border-radius: 99px;
+  }
+  h1 { font-size: clamp(32px, 6vw, 52px); line-height: 1.1; margin: 0 0 18px; }
+  .lede { font-size: clamp(17px, 2.4vw, 20px); color: var(--muted); max-width: 640px; margin: 0; }
+
+
+  section { padding: 40px 0; border-top: 1px solid var(--line); }
+  h2 { font-size: 22px; margin: 0 0 20px; }
+
+  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); gap: 16px; }
+  .feature { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+  .feature h3 { font-size: 17px; margin: 0 0 8px; }
+  .feature p { margin: 0; color: var(--muted); font-size: 15px; }
+
+  .get { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 16px; }
+  .card {
+    display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 12px; padding: 20px;
+  }
+  .card h3 { font-size: 17px; margin: 0 0 6px; }
+  .card p { margin: 0 0 16px; color: var(--muted); font-size: 15px; flex: 1; }
+  .btn {
+    display: inline-block; text-align: center; text-decoration: none; font-weight: 600;
+    padding: 10px 16px; border-radius: 8px; background: var(--accent); color: var(--accent-ink);
+  }
+  .btn:hover { filter: brightness(1.1); }
+
+  details { margin-top: 20px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 20px; }
+  summary { cursor: pointer; font-weight: 600; }
+  details ol { color: var(--muted); padding-left: 20px; margin: 12px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: .92em; color: var(--text); }
+
+  /* Mock feed. The .ssd-indicator rules are copied from ssd-tick-2/ui/styles.css. */
+  .feed { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 16px; }
+  .post {
+    background: #fff; color: #1c1e21; border-radius: 12px; padding: 14px 16px;
+    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    box-shadow: 0 1px 2px rgba(0,0,0,.4); opacity: .78;
+  }
+  .post.boosted { opacity: 1; box-shadow: 0 0 0 2px #4caf77, 0 6px 24px rgba(76,175,119,.25); }
+  .post p { margin: 10px 0 8px; }
+  .post-head { display: flex; align-items: center; gap: 10px; }
+  .avatar {
+    width: 40px; height: 40px; border-radius: 50%; color: #fff; font-weight: 700; font-size: 14px;
+    display: flex; align-items: center; justify-content: center; flex: none;
+  }
+  .who { font-weight: 600; }
+  .shared { font-weight: 400; color: #65676b; font-size: 13px; }
+  .when { color: #65676b; font-size: 13px; }
+  .tok { font: 11px/1.4 ui-monospace, Consolas, monospace; color: #65676b; overflow-wrap: anywhere; }
+  .note { margin-top: 10px; font-size: 13px; padding: 8px 10px; border-radius: 8px; }
+  .note.ok    { background: rgba(76,175,119,.12);  color: #1f7a48; }
+  .note.warn  { background: rgba(232,160,32,.14);  color: #8a5a00; }
+  .note.bad   { background: rgba(224,80,80,.12);   color: #b3261e; }
+  .note.muted { background: #f0f2f5; color: #65676b; }
+  .caption { color: var(--muted); font-size: 13px; margin: 14px 0 0; }
+  .ssd-indicator {
+    display: inline-flex; align-items: center; gap: 4px; margin: 4px 0 0 0;
+    padding: 1px 7px 1px 5px; border: 1.5px solid var(--ssd-colour, #666); border-radius: 11px;
+    background: color-mix(in srgb, var(--ssd-colour, #666) 10%, transparent);
+    color: var(--ssd-colour, #666); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 11px; line-height: 16px; font-weight: 600; vertical-align: middle;
+  }
+  .ssd-indicator-seal { font-size: 12px; line-height: 1; }
+  .ssd-indicator-label { white-space: nowrap; max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
+
+  footer { padding: 32px 0 48px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+  footer a { color: inherit; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <img src="icon-192.png" alt="">
+      <span>Signed, Sealed, Delivered</span>
+      <span class="beta">Beta</span>
+    </div>
+    <h1>Know what to trust<br>in your feed.</h1>
+    <p class="lede">
+      SSD Tick reads the signatures on posts as you scroll. Genuine posts from people you can
+      attribute get a boost. Anonymous and untrusted posts don't, and tampered ones get flagged.
+      It all runs in your browser, with no accounts and no central server.
+    </p>
+  </header>
+
+  <section>
+    <h2>What you'll see</h2>
+    <div class="feed">
+
+      <article class="post boosted">
+        <div class="post-head">
+          <div class="avatar" style="background:#3a6ea5">AM</div>
+          <div><div class="who">Alex Morgan</div><div class="when">12 min</div></div>
+        </div>
+        <p>Our statement on this morning's announcement is below. If you see a version that
+          doesn't carry my signature, it didn't come from me.</p>
+        <div class="tok">—SSD·7E47ADE9·fb:alex.morgan·3F9A0C21·Mx4v…Q==·2026-09-29T09:14Z—</div>
+        <span class="ssd-indicator" style="--ssd-colour:#4caf77"><span class="ssd-indicator-seal">✓</span><span class="ssd-indicator-label">Alex Morgan</span></span>
+        <div class="note ok">Signed and unchanged, by a key you hold. <b>Boosted.</b></div>
+      </article>
+
+      <article class="post">
+        <div class="post-head">
+          <div class="avatar" style="background:#7a5aa6">JR</div>
+          <div><div class="who">Jordan Reyes</div><div class="when">40 min</div></div>
+        </div>
+        <p>Great turnout at the meetup last night. Slides are up on my profile.</p>
+        <div class="tok">—SSD·B21C09F4·fb:jordan.reyes·9D02E71A·q8Lw…Aw==·2026-09-29T08:46Z—</div>
+        <span class="ssd-indicator" style="--ssd-colour:#e8a020"><span class="ssd-indicator-seal">?</span><span class="ssd-indicator-label">Unknown signer</span></span>
+        <div class="note warn">Validly signed, but you don't hold this key yet. Add it from their
+          profile to boost their posts.</div>
+      </article>
+
+      <article class="post">
+        <div class="post-head">
+          <div class="avatar" style="background:#555">?</div>
+          <div><div class="who">Daily Truth Updates</div><div class="when">1 h</div></div>
+        </div>
+        <p>BREAKING: officials confirm the announcement was a hoax. Share before it gets deleted!</p>
+        <div class="note muted">No signature, so nobody can be held to it. No boost.</div>
+      </article>
+
+      <article class="post">
+        <div class="post-head">
+          <div class="avatar" style="background:#3a6ea5">AM</div>
+          <div><div class="who">Alex Morgan <span class="shared">shared by a page you follow</span></div><div class="when">2 h</div></div>
+        </div>
+        <p>Our statement on this morning's announcement: we are withdrawing entirely.</p>
+        <div class="tok">—SSD·7E47ADE9·fb:alex.morgan·3F9A0C21·Mx4v…Q==·2026-09-29T09:14Z—</div>
+        <span class="ssd-indicator" style="--ssd-colour:#e05050"><span class="ssd-indicator-seal">✗</span><span class="ssd-indicator-label">Content modified</span></span>
+        <div class="note bad">The signature is real, but the words were changed after signing. Flagged.</div>
+      </article>
+
+    </div>
+    <p class="caption">Illustration. Names and posts are made up; the badges are the ones Tick draws on the page.</p>
+  </section>
+
+  <section>
+    <h2>What it does</h2>
+    <div class="features">
+      <div class="feature">
+        <h3>Boosts and flags what you read</h3>
+        <p>Tick checks every signed post on the page against the keys you hold. Attributable,
+          genuine posts get a boost. Anonymous and untrusted posts don't, and posts that were
+          tampered with get flagged. Nothing leaves your browser.</p>
+      </div>
+      <div class="feature">
+        <h3>No central key authority</h3>
+        <p>People put their public key in their profile on any social media platform, and Tick
+          picks it up from there with one tap. You can also share keys by QR code, file or link.
+          There is no registry, no gatekeeper and no account.</p>
+      </div>
+      <div class="feature">
+        <h3>Desktop and mobile</h3>
+        <p>Tick works in Firefox, Chrome, Edge and Brave on desktop, and on Android through
+          Firefox Nightly. It works on Facebook, X, Reddit, Telegram and WhatsApp.</p>
+      </div>
+      <div class="feature">
+        <h3>Sign your own posts and documents</h3>
+        <p>The SSD app adds a compact Ed25519 signature to your posts, so readers running Tick can
+          see it's really you. It also signs, seals and verifies whole documents as
+          <code>.ssd</code> files, which you can encrypt to a named recipient.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Get the beta</h2>
+    <div class="get">
+      <div class="card">
+        <h3>SSD Tick for Firefox</h3>
+        <p>Boosts and flags signed posts in desktop Firefox. On Android, automatic highlighting on
+          social media needs <b>Firefox Nightly</b>; the steps are below.</p>
+        <a class="btn" href="https://github.com/get-ssd/ssd-tick-2/releases/latest/download/ssd-tick-firefox.xpi">Download for Firefox</a>
+      </div>
+      <div class="card">
+        <h3>SSD Tick for Chrome</h3>
+        <p>Boosts and flags signed posts in desktop Chrome, Edge and Brave. It is a manual install
+          during the beta; the steps are below.</p>
+        <a class="btn" href="https://github.com/get-ssd/ssd-tick-2/releases/latest/download/ssd-tick-chrome.zip">Download for Chrome</a>
+      </div>
+      <div class="card">
+        <h3>SSD app</h3>
+        <p>Create your keys, put your public key on your profiles, and sign posts and documents.
+          It installs as an app on phone or desktop.</p>
+        <a class="btn" href="https://get-ssd.github.io/SignedSealedDelivered/">Open the app</a>
+      </div>
+    </div>
+
+    <details>
+      <summary>Installing Tick in Chrome</summary>
+      <ol>
+        <li>Download the zip and unzip it to a folder you will keep.</li>
+        <li>Go to <code>chrome://extensions</code> and turn on <b>Developer mode</b> (top right).</li>
+        <li>Click <b>Load unpacked</b> and choose the unzipped folder.</li>
+      </ol>
+    </details>
+    <details>
+      <summary>Installing Tick on Android (Firefox Nightly)</summary>
+      <ol>
+        <li>Install <b>Firefox Nightly</b> from the Play Store. Regular Firefox for Android won't
+          highlight posts on social media.</li>
+        <li>Download the <code>.xpi</code> on your phone.</li>
+        <li>In Nightly, go to <b>Settings → About Firefox Nightly</b> and tap the logo five times
+          to turn on the debug menu.</li>
+        <li>Back in <b>Settings</b>, tap <b>Install add-on from file</b> and pick the <code>.xpi</code>.</li>
+      </ol>
+    </details>
+  </section>
+
+  <footer>
+    This is beta software, so expect rough edges and please report them.
+    Source: <a href="https://github.com/get-ssd/SignedSealedDelivered">app</a> ·
+    <a href="https://github.com/get-ssd/ssd-tick-2">extension</a>.
+    &copy; <a href="https://idltd.com">IDLTD</a>
+  </footer>
+
+</div>
+</body>
+</html>
